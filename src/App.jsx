@@ -287,14 +287,16 @@ const AppTitolare = () => {
   // ==================== RENDER ====================
   return (
     <div className="h-screen bg-gray-100 flex flex-col max-w-md mx-auto relative">
-      {/* HEADER */}
+    
+  
+      {/*HEADER*/}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 shadow-lg sticky top-0 z-40">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Car className="w-7 h-7" />
             <div>
               <h1 className="text-lg font-bold">Officina App</h1>
-              <div className="text-xs opacity-90 flex items-center gap-2">
+              <div className="text-xs opacity-90 flex items-center gap 2">
                 <div className={`w-2 h-2 rounded-full ${backendStatus === 'online' ? 'bg-green-400' : 'bg-red-400'}`} />
                 {backendStatus === 'online' ? 'Online' : 'Offline - Dati demo'}
               </div>
@@ -332,7 +334,7 @@ const AppTitolare = () => {
             onClick={() => {
               alert(`Backend: ${API_URL}\nStato: ${backendStatus}\nRichieste: ${richieste.length}`);
             }}
-            className="w-full text-left px-4 py-3 hover:bg-gray-100 border-b"
+            className="w-full text-left px-4 py-3 hover:bg-gray-100 border-b" 
           >
             ℹ️ Info Sistema
           </button>
