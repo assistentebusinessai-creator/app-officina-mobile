@@ -3,7 +3,7 @@ import { Bell, Car, Clock, CheckCircle, AlertCircle, Mic, Phone, Search, Send, M
 
 // ==================== CONFIGURAZIONE ====================
 // 🔧 IMPORTANTE: Sostituisci con l'URL del tuo backend Python su Replit
-const API_URL = 'https://bot-whatsapp-backend.replit.app/api';
+const API_URL = 'bot-whatsapp-backend-production.up.railway.app';
 
 // Se stai testando in locale, usa:
 // const API_URL = 'http://localhost:5000/api';
@@ -43,34 +43,34 @@ const AppTitolare = () => {
   const caricaRichieste = async () => {
     setLoading(true);
     setError(null);
-
+    
     try {
       const response = await fetch(`${API_URL}/richieste`);
-
+      
       if (!response.ok) {
         throw new Error('Errore caricamento richieste');
       }
-
+      
       const data = await response.json();
       setRichieste(data);
-
+      
       // Aggiorna badge urgenze non lette
       const urgenze = data.filter(r => r.categoria === 'URGENTE' && !r.letto);
       setBadgeCount(urgenze.length);
-
+      
       // Mostra notifica per nuove urgenze
       urgenze.forEach(urgenza => {
         if (!notifiche.find(n => n.id === urgenza.id)) {
           mostraNotificaUrgenza(urgenza);
         }
       });
-
+      
       console.log(`✅ Caricate ${data.length} richieste`);
-
+      
     } catch (err) {
       console.error('❌ Errore caricamento:', err);
       setError('Impossibile caricare le richieste. Verifica che il backend sia online.');
-
+      
       // Usa dati demo in caso di errore (per testing)
       usaDatiDemo();
     } finally {
@@ -113,7 +113,7 @@ const AppTitolare = () => {
         letto: false
       }
     ];
-
+    
     setRichieste(richiesteDemo);
     setBadgeCount(1);
     console.log('⚠️ Usando dati demo (backend offline)');
@@ -128,18 +128,18 @@ const AppTitolare = () => {
       messaggio: `${richiesta.auto} - ${richiesta.urgenza}`,
       timestamp: new Date()
     };
-
+    
     setNotifiche(prev => {
       // Evita duplicati
       if (prev.find(n => n.id === richiesta.id)) return prev;
       return [notifica, ...prev];
     });
-
+    
     // Vibrazione (se supportata)
     if (navigator.vibrate) {
       navigator.vibrate([200, 100, 200]);
     }
-
+    
     // Rimuovi notifica dopo 5 secondi
     setTimeout(() => {
       setNotifiche(prev => prev.filter(n => n.id !== richiesta.id));
@@ -151,7 +151,7 @@ const AppTitolare = () => {
     setRichieste(prev => prev.map(r => 
       r.id === id ? { ...r, letto: true } : r
     ));
-
+    
     const urgenze = richieste.filter(r => 
       r.categoria === 'URGENTE' && !r.letto && r.id !== id
     );
@@ -161,7 +161,7 @@ const AppTitolare = () => {
   // ==================== INVIA RISPOSTA AL BACKEND ====================
   const inviaRisposta = async (richiestaId, messaggio, tipo = 'template') => {
     setLoading(true);
-
+    
     try {
       const response = await fetch(`${API_URL}/risposta`, {
         method: 'POST',
@@ -173,13 +173,13 @@ const AppTitolare = () => {
           messaggio: messaggio
         })
       });
-
+      
       if (!response.ok) {
         throw new Error('Errore invio risposta');
       }
-
+      
       const data = await response.json();
-
+      
       // Aggiorna stato locale
       setRichieste(prev => prev.map(r => 
         r.id === richiestaId 
@@ -192,15 +192,15 @@ const AppTitolare = () => {
             }
           : r
       ));
-
+      
       setModalRisposta(null);
       setAudioMode(false);
-
+      
       // Mostra conferma
       alert(`✅ Messaggio inviato al cliente via WhatsApp!\n\n${messaggio}`);
-
+      
       console.log('✅ Risposta inviata:', data);
-
+      
     } catch (err) {
       console.error('❌ Errore invio risposta:', err);
       alert('❌ Errore nell\'invio. Verifica che il backend sia online.');
@@ -212,9 +212,9 @@ const AppTitolare = () => {
   // ==================== COMPLETA RICHIESTA ====================
   const completaRichiesta = async (richiestaId) => {
     if (!confirm('Inviare messaggio di completamento al cliente?')) return;
-
+    
     setLoading(true);
-
+    
     try {
       const response = await fetch(`${API_URL}/completa`, {
         method: 'POST',
@@ -225,20 +225,20 @@ const AppTitolare = () => {
           richiesta_id: richiestaId
         })
       });
-
+      
       if (!response.ok) {
         throw new Error('Errore completamento');
       }
-
+      
       // Aggiorna stato locale
       setRichieste(prev => prev.map(r => 
         r.id === richiestaId 
           ? { ...r, stato: 'completata' }
           : r
       ));
-
+      
       alert('✅ Messaggio di completamento inviato!');
-
+      
     } catch (err) {
       console.error('❌ Errore completamento:', err);
       alert('❌ Errore. Verifica connessione backend.');
@@ -257,14 +257,14 @@ const AppTitolare = () => {
         usaDatiDemo();
       }
     });
-
+    
     // Auto-refresh ogni 30 secondi
     const interval = setInterval(() => {
       if (backendStatus === 'online') {
         caricaRichieste();
       }
     }, 30000);
-
+    
     return () => clearInterval(interval);
   }, []);
 
@@ -287,22 +287,20 @@ const AppTitolare = () => {
   // ==================== RENDER ====================
   return (
     <div className="h-screen bg-gray-100 flex flex-col max-w-md mx-auto relative">
-    
-  
-      {/*HEADER*/}
+      {/* HEADER */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 shadow-lg sticky top-0 z-40">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Car className="w-7 h-7" />
             <div>
               <h1 className="text-lg font-bold">Officina App</h1>
-              <div className="text-xs opacity-90 flex items-center gap 2">
+              <div className="text-xs opacity-90 flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${backendStatus === 'online' ? 'bg-green-400' : 'bg-red-400'}`} />
                 {backendStatus === 'online' ? 'Online' : 'Offline - Dati demo'}
               </div>
             </div>
           </div>
-
+          
           <div className="flex items-center gap-3">
             <button 
               onClick={caricaRichieste}
@@ -334,7 +332,7 @@ const AppTitolare = () => {
             onClick={() => {
               alert(`Backend: ${API_URL}\nStato: ${backendStatus}\nRichieste: ${richieste.length}`);
             }}
-            className="w-full text-left px-4 py-3 hover:bg-gray-100 border-b" 
+            className="w-full text-left px-4 py-3 hover:bg-gray-100 border-b"
           >
             ℹ️ Info Sistema
           </button>
@@ -398,7 +396,7 @@ const AppTitolare = () => {
             </div>
           )}
         </button>
-
+        
         <button
           onClick={() => setActiveTab('oggi')}
           className={`flex-1 py-4 px-2 font-semibold text-sm relative ${
@@ -415,7 +413,7 @@ const AppTitolare = () => {
             </div>
           )}
         </button>
-
+        
         <button
           onClick={() => setActiveTab('clienti')}
           className={`flex-1 py-4 px-2 font-semibold text-sm ${
@@ -467,7 +465,7 @@ const AppTitolare = () => {
                       {new Date(r.timestamp).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
                     </div>
                   </div>
-
+                  
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -513,7 +511,7 @@ const AppTitolare = () => {
                       {new Date(r.timestamp).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
                     </div>
                   </div>
-
+                  
                   <button
                     onClick={() => setModalRisposta(r)}
                     className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
@@ -539,7 +537,7 @@ const AppTitolare = () => {
                 className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
               />
             </div>
-
+            
             <div className="space-y-3">
               {filteredClienti.map(r => (
                 <div key={r.id} className="bg-white rounded-lg shadow p-4">
@@ -597,7 +595,7 @@ const AppTitolare = () => {
 
               <div className="border-t pt-4">
                 <div className="font-semibold mb-3">📝 Risposte rapide:</div>
-
+                
                 {modalRisposta.categoria === 'URGENTE' && (
                   <button
                     onClick={() => inviaRisposta(modalRisposta.id, templates.urgenza, 'template')}
@@ -608,7 +606,7 @@ const AppTitolare = () => {
                     <div className="text-sm text-gray-700">{templates.urgenza}</div>
                   </button>
                 )}
-
+                
                 {modalRisposta.categoria === 'APPUNTAMENTO' && (
                   <button
                     onClick={() => inviaRisposta(modalRisposta.id, templates.appuntamento, 'template')}
@@ -619,7 +617,7 @@ const AppTitolare = () => {
                     <div className="text-sm text-gray-700">{templates.appuntamento}</div>
                   </button>
                 )}
-
+                
                 {modalRisposta.categoria === 'PREVENTIVO' && (
                   <button
                     onClick={() => inviaRisposta(modalRisposta.id, templates.preventivo, 'template')}
@@ -654,7 +652,7 @@ const AppTitolare = () => {
                     </>
                   )}
                 </button>
-
+                
                 {audioMode && (
                   <div className="mt-4 bg-purple-50 p-4 rounded-xl border-2 border-purple-200">
                     <div className="text-center mb-3">
